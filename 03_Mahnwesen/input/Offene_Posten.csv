@@ -1,0 +1,19 @@
+﻿Kunde;Rechnungsnummer;Rechnungsdatum;Betrag;Faelligkeitsdatum;Zahlungsstatus
+Bäckerei Vogt;AR-2026-1000;02.06.2026;1.154,61;02.07.2026;offen
+Autohaus Lindner GmbH;AR-2026-1007;29.05.2026;1.836,99;28.06.2026;offen
+Elektro Brenner;AR-2026-1014;03.05.2026;4.653,81;24.05.2026;offen
+Gartenbau Wiese GmbH;AR-2026-1021;15.05.2026;3.221,47;05.06.2026;offen
+Metallbau Krause AG;AR-2026-1028;25.06.2026;2.814,38;16.07.2026;offen
+Steuerbüro Albrecht;AR-2026-1035;29.05.2026;975,99;19.06.2026;offen
+Spedition Falkner GmbH;AR-2026-1042;18.06.2026;2.896,34;09.07.2026;bezahlt
+Optik Sonnberg;AR-2026-1049;05.06.2026;3.292,12;26.06.2026;offen
+Tischlerei Holzmann;AR-2026-1056;06.07.2026;996,44;20.07.2026;offen
+Apotheke am Markt;AR-2026-1063;08.06.2026;2.631,18;22.06.2026;offen
+Kanzlei Weber & Partner;AR-2026-1070;01.06.2026;3.943,81;01.07.2026;offen
+Sanitär Quelle GmbH;AR-2026-1077;15.05.2026;2.857,69;29.05.2026;offen
+Café Morgenrot;AR-2026-1084;05.07.2026;608,51;19.07.2026;offen
+Werbeagentur Pixelhaus GmbH;AR-2026-1091;15.06.2026;2.791,25;29.06.2026;offen
+Fahrschule Startklar;AR-2026-1098;24.05.2026;1.454,70;23.06.2026;offen
+Immobilien Schlüssel GmbH;AR-2026-1105;13.06.2026;1.688,24;13.07.2026;bezahlt
+Physiotherapie Balance;AR-2026-1112;17.05.2026;4.335,58;07.06.2026;bezahlt
+Modehaus Eleganza;AR-2026-1119;27.05.2026;1.567,26;26.06.2026;bezahlt
