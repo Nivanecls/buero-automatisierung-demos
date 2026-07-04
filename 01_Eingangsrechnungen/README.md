@@ -1,79 +1,72 @@
 # Verarbeitung von Eingangsrechnungen (PDF → Excel)
 
-**Demo-Projekt** – ein Ordner voller PDF-Eingangsrechnungen von verschiedenen
-Lieferanten (unterschiedliche Layouts!) wird automatisch in **eine**
-übersichtliche Excel-Tabelle überführt: Lieferant, Rechnungsnummer, Datum,
-Netto, MwSt, Brutto, Zahlungsziel, Status. Überfällige Rechnungen erscheinen
-rot. Alle Rechnungen sind synthetisch, alle Firmen frei erfunden.
+Ein Ordner voller PDF-Rechnungen von verschiedenen Lieferanten, jede anders
+aufgebaut, wird in eine Excel-Tabelle überführt: Lieferant, Rechnungsnummer,
+Datum, Netto, MwSt, Brutto, Zahlungsziel, Status. Überfällige Rechnungen sind
+rot markiert. Alle Rechnungen sind synthetisch, alle Firmen frei erfunden.
+
+Das Tool braucht Excel **und Word**: Word wird im Hintergrund gestartet und
+dient nur als PDF-Textkonverter, es öffnet dabei keine sichtbaren Fenster.
 
 ## Vorher → Nachher
 
-| Vorher | Nachher |
-|---|---|
-| `input/` – 9 PDF-Rechnungen, drei völlig verschiedene Layouts (klassischer Briefkopf, moderner Stil, schlichte Dienstleister-Rechnung), verschiedene Feldbezeichnungen | `output/Rechnungsuebersicht.xlsx` – eine Tabelle, alle Felder extrahiert, überfällige Posten rot, unsichere Extraktionen gelb („Prüfen"), Summenzeile |
-
-Statt 9 PDFs zu öffnen und abzutippen: ein Klick.
-
-## Die Lösung ist eine einzige Excel-Datei
-
-`Rechnungserfassung.xlsm` enthält den kompletten VBA-Code. Kein Python, kein
-OCR-Dienst, keine Cloud – nur Microsoft Office. **Word dient dabei als
-PDF-Textkonverter:** Word (ab 2013) kann PDFs öffnen und in Text umwandeln;
-das Tool steuert Word unsichtbar im Hintergrund.
+`input/` enthält 9 PDF-Rechnungen in drei unterschiedlichen Layouts
+(klassischer Briefkopf, moderner Stil, schlichte Dienstleister-Rechnung).
+`output/Rechnungsuebersicht.xlsx` enthält alle Felder extrahiert, mit
+Autofilter, Summenzeile und Statusspalte (Offen / Überfällig / Prüfen).
 
 ## Eingabeformat
 
-Ein Ordner mit textbasierten PDF-Rechnungen (keine Scans – für gescannte
-Rechnungen wäre zusätzlich OCR nötig). Die Extraktion arbeitet mit
-**Schlüsselwörtern und regulären Ausdrücken statt fester Koordinaten** und
-versteht daher unterschiedliche Formulierungen:
+Ein Ordner mit textbasierten PDF-Rechnungen – keine Scans, dafür wäre
+zusätzlich OCR nötig. Die Extraktion sucht nach Schlüsselwörtern und
+regulären Ausdrücken statt nach festen Koordinaten und erkennt deshalb
+unterschiedliche Formulierungen:
 
 - Rechnungsnummer: `Rechnungsnummer:`, `RECHNUNG Nr.`, `Rechnung R-…`
-- Beträge: `Nettobetrag`, `Zwischensumme (netto)`, `Summe netto`;
-  `MwSt`, `Umsatzsteuer`, `Mehrwertsteuer`; `Rechnungsbetrag`,
-  `Gesamtbetrag`, `Brutto zu zahlen`
+- Beträge: `Nettobetrag` / `Zwischensumme (netto)` / `Summe netto`,
+  `MwSt` / `Umsatzsteuer` / `Mehrwertsteuer`, `Rechnungsbetrag` /
+  `Gesamtbetrag` / `Brutto zu zahlen`
 - Fälligkeit: `Zahlbar bis …`, `Zahlungsziel: …`, `Fällig am …`
-- Deutsche Beträge (`1.234,56 €`) und Daten (`TT.MM.JJJJ`)
+- deutsche Beträge (`1.234,56 €`) und Daten (`TT.MM.JJJJ`)
 
 Die 9 Demo-PDFs erzeugt `generate_input.py` (reportlab, drei
 Layout-Generatoren).
 
 ## So funktioniert der VBA-Code
 
-Der Code liegt in [`src/modRechnungen.bas`](src/modRechnungen.bas) (lesbarer
-Export, identisch mit dem Code in der `.xlsm`).
+Der Code liegt in [`src/modRechnungen.bas`](src/modRechnungen.bas), lesbarer
+Export, identisch mit dem Code in der `.xlsm`.
 
-1. **Ordner durchlaufen:** alle `*.pdf` im gewählten Ordner.
-2. **PDF → Text:** jede Datei wird von unsichtbarem Word geöffnet und
-   konvertiert. Zwei Stolperfallen werden im Code abgefangen: der
-   „PDF wird konvertiert"-Hinweis wird deaktiviert (sonst wartet der
-   unsichtbare Prozess ewig auf einen unsichtbaren Klick), und neben dem
-   Haupttext werden auch die Kopfzeilen-Bereiche ausgelesen – Words
-   PDF-Konverter legt Briefköpfe vom oberen Seitenrand dort ab.
-3. **Felder extrahieren:** reguläre Ausdrücke (VBScript.RegExp) suchen
-   Schlüsselwort-Varianten und greifen den zugehörigen Wert – tolerant
-   gegenüber Zeilenumbrüchen und Tabellenstruktur im konvertierten Text.
-   Beträge und Daten werden locale-unabhängig geparst (funktioniert auf
-   jedem Windows, egal welche Regionaleinstellung).
-4. **Plausibilitätsprüfung:** Netto + MwSt = Brutto (±1 Cent). Stimmt etwas
-   nicht oder fehlt ein Feld → Zeile gelb, Status **Prüfen** – das Tool rät
-   nicht, es markiert.
-5. **Übersicht:** formatierte Tabelle mit Autofilter, Summenzeile und
-   Statusspalte: **Offen** / **Überfällig** (rot) / **Prüfen** (gelb).
+1. Alle `*.pdf` im gewählten Ordner werden nacheinander verarbeitet.
+2. Jede Datei wird von unsichtbarem Word geöffnet und in Text umgewandelt.
+   Zwei Dinge werden dabei im Code abgefangen: der "PDF wird
+   konvertiert"-Hinweis wird deaktiviert, sonst wartet der unsichtbare
+   Word-Prozess auf einen Klick, den niemand sieht; und neben dem Haupttext
+   werden auch die Kopfzeilen-Bereiche ausgelesen, weil Words PDF-Konverter
+   den oberen Seitenrand (Briefkopf) dort ablegt statt im Fließtext.
+3. Reguläre Ausdrücke (VBScript.RegExp) suchen die Schlüsselwort-Varianten
+   und lesen den zugehörigen Wert, tolerant gegenüber Zeilenumbrüchen und
+   Tabellenstruktur im konvertierten Text. Beträge und Daten werden ohne
+   `CDbl`/`CDate` geparst, damit die Windows-Regionaleinstellung keine Rolle
+   spielt.
+4. Plausibilitätsprüfung: Netto + MwSt muss (bis auf 1 Cent) Brutto ergeben.
+   Stimmt das nicht oder fehlt ein Feld, wird die Zeile gelb markiert und als
+   "Prüfen" gekennzeichnet, statt einen falschen Wert einzutragen.
+5. Die Übersichtstabelle bekommt Autofilter, Summenzeile und die Statusspalte
+   Offen / Überfällig (rot) / Prüfen (gelb).
 
 ## Verwendung
 
 1. `Rechnungserfassung.xlsm` öffnen, Makros erlauben.
-2. Auf **„Rechnungen erfassen"** klicken.
-3. PDF-Ordner und Zieldatei wählen – fertig.
+2. Auf "Rechnungen erfassen" klicken.
+3. PDF-Ordner und Zieldatei wählen.
 
-Für automatisierte Tests: `ErfasseRechnungen pdfOrdner, zielDatei`
-(ohne Dialoge).
+Für Tests ohne Dialoge: `ErfasseRechnungen pdfOrdner, zielDatei`.
 
 ## Voraussetzungen
 
-- Microsoft Excel und Microsoft Word ab 2013 (Desktop, Windows), Makros erlaubt
-- Textbasierte PDFs (keine gescannten Bilder)
+- Microsoft Excel und Microsoft Word ab 2013 (Windows), Makros erlaubt
+- textbasierte PDFs, keine gescannten Bilder
 
 ## Projektstruktur
 

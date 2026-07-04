@@ -1,83 +1,78 @@
 # Automatisiertes Mahnwesen
 
-**Demo-Projekt** – aus einer Offene-Posten-Liste (CSV) entstehen automatisch
-fertige Mahnschreiben als Word-Dokumente, mit **automatischer Eskalation** nach
-Tagen des Verzugs, plus eine farbcodierte Excel-Übersicht. Alle Daten sind
-synthetisch, alle Firmen frei erfunden.
+Aus einer Offene-Posten-Liste (CSV) entstehen fertige Mahnschreiben als
+Word-Dokumente, mit Eskalationsstufe je nach Verzugsdauer, dazu eine
+Excel-Übersicht mit Ampelfarben. Alle Daten sind synthetisch, alle Firmen
+frei erfunden.
 
-**Wichtig:** Es wird nichts versendet. Das Tool erzeugt geprüfbare Entwürfe –
-der Versand bleibt eine bewusste, manuelle Entscheidung.
+Das Tool braucht Excel **und Word** (die Briefe werden als .docx erzeugt).
+Versendet wird nichts – die Schreiben liegen als Dateien bereit, der Versand
+bleibt eine manuelle Entscheidung.
 
 ## Eskalationslogik
 
 | Verzug | Stufe | Ton |
 |---|---|---|
 | 1–7 Tage | Stufe 1 | freundliche Zahlungserinnerung |
-| 8–21 Tage | Stufe 2 | bestimmte Mahnung mit Fristsetzung |
-| ab 22 Tagen | Stufe 3 | letzte Mahnung vor rechtlichen Schritten / Inkasso |
+| 8–21 Tage | Stufe 2 | Mahnung mit Fristsetzung |
+| ab 22 Tagen | Stufe 3 | letzte Mahnung vor rechtlichen Schritten |
 
 Bezahlte und noch nicht fällige Rechnungen bekommen kein Schreiben.
 
 ## Vorher → Nachher
 
-| Vorher | Nachher |
-|---|---|
-| `input/Offene_Posten.csv` – 18 Rechnungen, unsortiert: bezahlt, offen, 2 bis 41 Tage überfällig | `output/` – 11 versandfertige Mahnschreiben (Word), Dateiname zeigt Stufe und Kunde, plus `Mahnuebersicht.xlsx` mit Ampelfarben und Zusammenfassung (Schreiben je Stufe, überfällige Gesamtsumme) |
-
-## Die Lösung ist eine einzige Excel-Datei
-
-`Mahnwesen.xlsm` enthält den kompletten VBA-Code. Kein Python, keine
-Installation – nur Microsoft Office.
+`input/Offene_Posten.csv` enthält 18 Rechnungen: bezahlte, offene, 2 bis 41
+Tage überfällige. In `output/` liegen danach 11 Mahnschreiben (der Dateiname
+zeigt Stufe und Kunde) und `Mahnuebersicht.xlsx` – alle Posten mit
+Verzugstagen und Stufe, farblich markiert, darunter die Zusammenfassung:
+Schreiben je Stufe, offene und überfällige Gesamtsumme.
 
 ## Eingabeformat
 
-CSV, Semikolon-getrennt, UTF-8 (typisches ERP-Exportformat), deutsche
-Zahlen- und Datumsformate:
+CSV, Semikolon-getrennt, UTF-8, deutsche Zahlen- und Datumsformate – das
+übliche Exportformat deutscher Buchhaltungsprogramme:
 
 ```
 Kunde;Rechnungsnummer;Rechnungsdatum;Betrag;Faelligkeitsdatum;Zahlungsstatus
 Bäckerei Vogt;AR-2026-1000;02.06.2026;1.154,61;02.07.2026;offen
 ```
 
-`Zahlungsstatus`: `offen` oder `bezahlt`. Die Spaltenreihenfolge ist egal –
+`Zahlungsstatus` ist `offen` oder `bezahlt`. Die Spaltenreihenfolge ist egal,
 die Spalten werden über die Kopfzeile gefunden. Die Demo-Datei erzeugt
 `generate_input.py`.
 
 ## So funktioniert der VBA-Code
 
-Der Code liegt in [`src/modMahnwesen.bas`](src/modMahnwesen.bas) (lesbarer
-Export, identisch mit dem Code in der `.xlsm`).
+Der Code liegt in [`src/modMahnwesen.bas`](src/modMahnwesen.bas), lesbarer
+Export, identisch mit dem Code in der `.xlsm`.
 
-1. **CSV einlesen:** über einen UTF-8-Stream – funktioniert unabhängig von den
-   Windows-Regionaleinstellungen; deutsche Beträge (`1.234,56`) und Daten
-   (`TT.MM.JJJJ`) werden locale-sicher geparst.
-2. **Stufe bestimmen:** Verzugstage = heute − Fälligkeitsdatum, daraus die
-   Eskalationsstufe nach obiger Tabelle.
-3. **Briefe erzeugen:** Word läuft unsichtbar im Hintergrund; pro überfälliger
-   Rechnung entsteht ein formatiertes Schreiben mit Absender, Empfänger, Datum,
-   Betreff und stufengerechtem Text – Rechnungsnummer, Betrag und neue Frist
-   (Stufe 1: +10 Tage, Stufe 2: +7, Stufe 3: +5) sind bereits eingesetzt.
-4. **Übersicht schreiben:** alle Posten mit Verzugstagen und Stufe,
-   Ampelfarben (gelb/orange/rot), bezahlte Posten ausgegraut, darunter die
-   Zusammenfassung: Anzahl Schreiben je Stufe, offene und überfällige
-   Gesamtsumme.
+1. Die CSV wird über einen UTF-8-Stream gelesen; Beträge (`1.234,56`) und
+   Daten (`TT.MM.JJJJ`) werden ohne `CDbl`/`CDate` geparst, damit die
+   Windows-Regionaleinstellung keine Rolle spielt.
+2. Verzugstage = heute minus Fälligkeitsdatum, daraus die Stufe nach der
+   Tabelle oben.
+3. Word läuft unsichtbar im Hintergrund und erzeugt pro überfälliger Rechnung
+   ein Schreiben mit Absender, Empfänger, Datum, Betreff und stufengerechtem
+   Text. Rechnungsnummer, Betrag und neue Frist (Stufe 1: +10 Tage, Stufe 2:
+   +7, Stufe 3: +5) sind bereits eingesetzt.
+4. Die Übersicht listet alle Posten mit Verzugstagen und Stufe, gelb/orange/
+   rot markiert, bezahlte Posten ausgegraut, darunter die Zusammenfassung.
 
-Der Briefabsender ist im Modulkopf als Konstante hinterlegt und in einer
-Minute an die eigene Firma angepasst.
+Der Briefabsender steht als Konstante im Modulkopf und ist schnell an die
+eigene Firma angepasst.
 
 ## Verwendung
 
 1. `Mahnwesen.xlsm` öffnen, Makros erlauben.
-2. Auf **„Mahnungen erstellen"** klicken.
-3. CSV und Zielordner wählen – die Ergebnismeldung zeigt die Anzahl der
+2. Auf "Mahnungen erstellen" klicken.
+3. CSV und Zielordner wählen. Die Meldung am Ende zeigt die Anzahl der
    Schreiben je Stufe und die überfällige Summe.
 
-Für automatisierte Tests: `ErstelleMahnungen csvPfad, zielOrdner`
-(ohne Dialoge).
+Für Tests ohne Dialoge: `ErstelleMahnungen csvPfad, zielOrdner`.
 
 ## Voraussetzungen
 
-- Microsoft Excel und Microsoft Word (Desktop, Windows), Makros erlaubt
+- Microsoft Excel und Microsoft Word (Windows), Makros erlaubt
 
 ## Projektstruktur
 

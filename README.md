@@ -1,20 +1,22 @@
 # Büroautomatisierung mit Excel/VBA – Demo-Portfolio
 
 Vier Demo-Projekte für typische Büroaufgaben kleiner und mittlerer Unternehmen.
-Jedes Tool ist **eine einzige Excel-Datei (.xlsm)** – keine Installation, kein
-Python, keine Cloud, keine Anbindung an ein bestimmtes ERP/CRM. Benötigt wird
-nur Microsoft Office, das ohnehin auf fast jedem Büro-PC vorhanden ist.
+Jede Lösung ist eine einzelne Excel-Datei (.xlsm) mit VBA-Code, ohne Anbindung
+an ein bestimmtes ERP oder CRM. Drei der vier Tools steuern zusätzlich Word im
+Hintergrund (PDF-Text lesen, Briefe und Dokumente erzeugen) – nur die
+Datenbereinigung in Projekt 2 kommt ohne Word aus. Genaueres steht jeweils
+unter "Voraussetzungen" im README des Projekts.
 
-**Alle Daten sind synthetisch.** Sämtliche Firmen, Personen, Adressen und
-Beträge sind frei erfunden und werden pro Projekt durch ein Python-Skript
-(`generate_input.py`) erzeugt – die Skripte gehören zur Demo, nicht zum Tool.
+Alle Daten sind synthetisch: Firmen, Personen, Adressen und Beträge sind frei
+erfunden und werden pro Projekt durch `generate_input.py` erzeugt. Diese
+Skripte gehören zur Demo, nicht zur eigentlichen Lösung.
 
-| # | Projekt | Vorher → Nachher |
-|---|---|---|
-| 1 | [Verarbeitung von Eingangsrechnungen](01_Eingangsrechnungen/) | Ordner mit PDF-Rechnungen (verschiedene Layouts) → eine Excel-Übersicht, Überfälliges rot markiert |
-| 2 | [Bereinigung von Kundenstammdaten](02_Kundenstammdaten/) | verschmutzte Kundenliste (Dubletten, Tippfehler, Formatchaos) → saubere Liste + lückenloses Änderungsprotokoll |
-| 3 | [Automatisiertes Mahnwesen](03_Mahnwesen/) | Offene-Posten-Liste (CSV) → versandfertige Mahnschreiben in 3 Eskalationsstufen + Ampel-Übersicht |
-| 4 | [Automatische Dokumentenerstellung](04_Dokumentenerstellung/) | Excel-Teilnehmerliste + Word-Vorlage → Stapel personalisierter Bescheinigungen als DOCX und PDF |
+| # | Projekt | Braucht | Vorher → Nachher |
+|---|---|---|---|
+| 1 | [Verarbeitung von Eingangsrechnungen](01_Eingangsrechnungen/) | Excel + Word | Ordner mit PDF-Rechnungen unterschiedlicher Layouts → eine Excel-Übersicht, überfällige Posten rot |
+| 2 | [Bereinigung von Kundenstammdaten](02_Kundenstammdaten/) | Excel | verschmutzte Kundenliste (Dubletten, Tippfehler, Formatchaos) → saubere Liste plus Änderungsprotokoll |
+| 3 | [Automatisiertes Mahnwesen](03_Mahnwesen/) | Excel + Word | Offene-Posten-Liste (CSV) → Mahnschreiben in drei Eskalationsstufen plus Übersicht |
+| 4 | [Automatische Dokumentenerstellung](04_Dokumentenerstellung/) | Excel + Word | Excel-Teilnehmerliste und Word-Vorlage → personalisierte Dokumente als DOCX und PDF |
 
 ## Aufbau jedes Projekts
 
@@ -28,23 +30,18 @@ Beträge sind frei erfunden und werden pro Projekt durch ein Python-Skript
 └── README.md            ← Funktionsweise, Eingabeformat, Voraussetzungen
 ```
 
-## Technische Gemeinsamkeiten
+## Gemeinsamkeiten
 
-- **Ein Klick, klare Dialoge:** Datei/Ordner auswählen, Ergebnismeldung mit
-  Zahlen („X Rechnungen verarbeitet, Y überfällig").
-- **Locale-fest:** deutsche Beträge (`1.234,56 €`) und Daten (`TT.MM.JJJJ`)
-  werden unabhängig von den Windows-Regionaleinstellungen korrekt verarbeitet.
-- **Word-Automatisierung** (Projekte 1, 3, 4): Word läuft unsichtbar im
-  Hintergrund – als PDF-Textkonverter bzw. Dokumentgenerator. Late Binding,
-  daher ohne Verweis-Einstellungen mit jeder Office-Version ab 2013 lauffähig.
-- **Nachvollziehbar statt magisch:** Unsicheres wird markiert (gelb,
-  „Prüfen"), Änderungen werden protokolliert, nichts wird ungefragt versendet
-  oder gelöscht.
-- Jedes Makro läuft auch parameterisiert ohne Dialoge – so wurden alle vier
-  Tools automatisiert getestet.
+Jedes Tool startet über einen Button, fragt Datei bzw. Ordner ab und meldet am
+Ende ein Ergebnis mit Zahlen (z.B. "9 Rechnungen verarbeitet, 5 überfällig").
+Deutsche Zahlen- und Datumsformate (`1.234,56 €`, `TT.MM.JJJJ`) werden
+unabhängig von den Windows-Regionaleinstellungen korrekt verarbeitet. Wo eine
+Extraktion oder Zuordnung unsicher ist, wird die Zeile gelb markiert statt
+geraten. Jedes Makro lässt sich auch mit festen Pfaden als Parameter ohne
+Dialoge aufrufen – so wurden alle vier Tools automatisiert getestet.
 
 ## Voraussetzungen
 
-Microsoft Office (Excel, für Projekte 1/3/4 zusätzlich Word) unter Windows,
-Makros erlaubt. Python wird **nur** zum Erzeugen der Demo-Daten gebraucht
-(`pip install reportlab openpyxl python-docx`).
+Windows mit Microsoft Excel, für die Projekte 1, 3 und 4 zusätzlich Word;
+Makros müssen erlaubt sein. Python wird nur zum Erzeugen der Demo-Daten
+gebraucht (`pip install reportlab openpyxl python-docx`).
